@@ -1,0 +1,28 @@
+---
+title: "M06-Reflection Essay-Advanced Data Wrangling"
+author: "Your Name"
+format: 
+  html: 
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-link: true
+    embed-resources: true
+editor: visual
+execute: 
+  freeze: auto
+---
+
+# Respond to the following essay prompt.
+
+## Essay Prompt:
+
+<div>
+
+1.  In **Step 1**, you learned how to design stunning presentation slides with Quarto. What's your impression of the Revealjs presentation? Describe its capabilities as you learned from the presentations. What are its strengths and weaknesses compared with PPT?
+
+2.  In **Step 2**, you were asked to create a Revealjs presentation. Provide a link to the presentation you published on the web.  Add at least one reproducible chart or table in the presentation. Briefly describe what the presentation is about. What did you learn from the experience of the Revealjs presentation? 
+
+3.  My advanced wrangling lecture in **Step 3** introduced new concepts, including joining relational databases. Pick three different functions, each from a different category.  Describe when to use them and give one coding example along with an output for each function. To clarify, you are expected to do literate programming to weave your narratives with the code.
+
+</div>

@@ -1,0 +1,77 @@
+
+/* Apply a yellow background to first-level headings (h1) */
+h1 {
+    background-color: #E1B61B; /* Yellow for first-level headings */
+    padding: 10px; /* Optional: Add padding for better appearance */
+    border-radius: 5px; /* Optional: Add rounded corners */
+    margin: 1; /* Remove default margin for a cleaner look */
+}
+
+h2 {
+    background-color: #B9D9EB; /* Yellow for first-level headings */
+    padding: 10px; /* Optional: Add padding for better appearance */
+    border-radius: 5px; /* Optional: Add rounded corners */
+    margin: 0; /* Remove default margin for a cleaner look */
+}
+
+
+h3 {
+    background-color: #B9D9EB; /* Yellow for first-level headings */
+    padding: 10px; /* Optional: Add padding for better appearance */
+    border-radius: 5px; /* Optional: Add rounded corners */
+    margin: 0; /* Remove default margin for a cleaner look */
+}
+
+
+h4 {
+    background-color: #E1B61B; /* Yellow for first-level headings */
+    padding: 10px; /* Optional: Add padding for better appearance */
+    border-radius: 5px; /* Optional: Add rounded corners */
+    margin: 0; /* Remove default margin for a cleaner look */
+}
+
+
+
+/* Define a custom style for larger callouts */
+.large-callout {
+    font-size: 1.5em; /* Adjust the size as needed */
+}
+
+
+/* Define a custom style for large text */
+.large-text {
+  font-size: 60px;
+}
+
+/* Define a custom style for medium text */
+.medium-text {
+  font-size: 40px;
+}
+
+/* Define a custom style for small text */
+.small-text {
+  font-size: 20px;
+}
+
+/* Make h1 font size to be 2 times the fefault font-size */
+h1 {
+  font-size: 1.5em;
+}
+
+/* Make h2 font size to be 1.5 times the fefault font-size */
+h2 {
+  font-size: 1.3em;
+}
+  
+/* Hover Effects */
+h1:hover, h2:hover, h3:hover, h4:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    transition: all 0.2s ease-in-out;
+}
+
+.highlight-muted {
+    color: #6c757d; /* Muted gray color for de-emphasis */
+
+}
+

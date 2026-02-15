@@ -1,0 +1,146 @@
+---
+title: "M06-Reflection Essay-Advanced Data Wrangling"
+author: "Your Name"
+format: 
+  html: 
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-link: true
+    embed-resources: true
+editor: visual
+execute: 
+  freeze: auto
+---
+
+# Respond to the following essay prompt.
+
+## Essay Prompt:
+
+<div>
+
+1.  In **Step 1**, you learned how to design stunning presentation slides with Quarto. What's your impression of the Revealjs presentation? Describe its capabilities as you learned from the presentations. What are its strengths and weaknesses compared with PPT?
+
+2.  In **Step 2**, you were asked to create a Revealjs presentation. Provide a link to the presentation you published on the web.  Add at least one reproducible chart or table in the presentation. Briefly describe what the presentation is about. What did you learn from the experience of the Revealjs presentation? 
+
+3.  My advanced wrangling lecture in **Step 3** introduced new concepts, including joining relational databases. Pick three different functions, each from a different category.  Describe when to use them and give one coding example along with an output for each function. To clarify, you are expected to do literate programming to weave your narratives with the code.
+
+</div>
+
+## Reveal.js in Quarto: Impressions, Capabilities, and Comparison with PPT
+
+> In **Step 1**, you learned how to design stunning presentation slides with Quarto. What's your impression of the Revealjs presentation? Describe its capabilities as you learned from the presentations. What are its strengths and weaknesses compared with PPT?
+
+My impression of the Reveal.js presentation is that it’s powerful at generating slides beyond the capabilities that another tool like PowerPoint offers, specifically for showcasing data-driven insights. With Reveal.js you can integrate code and have dynamic outputs. You can also customize slides with CSS or SCSS. 
+
+Reveal.js feels suitable for researchers and data analysts, as presentations in Quarto tend to feel more technical in nature but with a high level of control for showcasing data.
+
+**Reveal.js capabilities learned include the following:**
+
+-   A centralized configuration via YAML such as title, subtitle, theme, author, slide numbers, footer, etc.
+
+-   Visual and interactive elements like transition effects, font sizes, speaker notes, and the chalkboard drawing tool. 
+
+-   Ability to have full customization using SCSS to define color variables and heading styles or to use built-in themes. 
+
+-   Reproducible content, for example, inline coding to make live updates and outputs rendered with code.
+
+-   Easily publish to quarto.pub, or export as PDF.
+
+Some strengths compared to PPT would be that it offers the flexibility to have automatic live code updates to stay organized and that it is HTML-based, meaning that CSS can be used to style presentations and it’s web-friendly. Alternatively, some weaknesses could be that it has a learning curve, as it’s more technical than PPT. For example, there is not drag-and-drop visual editing, which one could argue that with the growing popularity of tools like Canva, Reveal.js may fall behind, as styling can be quite limiting and more time-consuming. 
+
+## Reveal.js Marketing Access Scorecard Presentation
+
+> In **Step 2**, you were asked to create a Revealjs presentation. Provide a link to the presentation you published on the web.  Add at least one reproducible chart or table in the presentation. Briefly describe what the presentation is about. What did you learn from the experience of the Revealjs presentation? 
+
+**Presentation Link:**
+
+**Presentation Description:**
+
+Overall, the presentation focuses on Garcia research’s MAS website design to position itself as credible sources for inclusive marketing consulting services and research. The presentation covers the competitor analysis, research frameworks, measurement approaches, and analytics methods to help optimize the MAS website for an online presence. 
+
+-   Chapter 2 looks at 3 different competitors such as Bold Culture, Touchstone Research, and C+R’s CultureBeat division.
+
+-   The second part of Ch 2 also looks at models such as the AIDA and ELM models to guide website structure. 
+
+-   Chapter 3 looks at the MAS survey dimensions for Spanish-speaking accessibility as well as analytics methods for the MAS website such as keywords research, and GA4 metrics.
+
+**What did you learn from the experience of the Revealjs presentation?**
+
+I learned how to customize the theme of the presentation and using css to style the colors of the presentations. I also learned how to make transitions and adding content to a Reveal.js presentation. It was interesting to design this presentation, and would like to continue practicing to learn other capabilities as well as to learn how to style the presentation more.
+
+## Advanced Data Wrangling: Key Functions
+
+> My advanced wrangling lecture in **Step 3** introduced new concepts, including joining relational databases. Pick three different functions, each from a different category.  Describe when to use them and give one coding example along with an output for each function. To clarify, you are expected to do literate programming to weave your narratives with the code.
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(nycflights13)
+library(ggplot2)
+
+```
+
+### `` `semi_join() ``\`
+
+**When to use:**
+
+-   This function is suitable when you want to filter a table to only have rows that match another table.
+
+**Coding Example:**
+
+-   First `group_by` species, then calculate the average Sepal.Length and store it in a new column named avg_sepal. Arrange in descending order and lastly I used `semi_join()` to keep all rows from iris where species exist in the top_species.
+
+```{r}
+
+top_species <- iris |>
+  group_by(Species) |>
+  summarize(avg_sepal = mean(Sepal.Length)) |>
+  arrange(desc(avg_sepal)) |>
+  head(2)
+
+iris |>
+  semi_join(top_species, by = "Species")
+
+```
+
+### `case_when()`
+
+**When to use:**
+
+-   This function is useful when creating a new category based on if-else logic. it's appropriate to use to group values into categories with multiple conditions.
+
+**Coding Example:**
+
+-   Creates a new column named speed, then `case_when()` assigns a label. If flight was greater than 300 minutes it was a long flight, if it was greater than 120 minutes it was a medium flight, and if it was neither than it was a short flight. Lastly the `count()` function counts how many flights were in each category.
+
+```{r}
+
+flights |>
+  mutate(speed = case_when(
+    air_time > 300 ~ "Long flight",
+    air_time > 120 ~ "Medium flight",
+    TRUE ~ "Short flight"
+  )) |>
+  
+  count(speed)
+
+```
+
+## `distinct()`
+
+**When to use:**
+
+-   Use this function when you want to remove duplicate rows. This is helpful to find unique rows and to clean any duplicates before summarizing any data.
+
+**Coding Example:**
+
+-   Keeps only unique values from the manufacturer column.
+
+```{r}
+distinct_manufacturers <- mpg |>
+  distinct(manufacturer)
+
+distinct_manufacturers
+
+```

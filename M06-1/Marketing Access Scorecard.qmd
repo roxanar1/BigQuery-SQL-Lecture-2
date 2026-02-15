@@ -1,0 +1,423 @@
+---
+title: "Marketing Access Scorecard"
+subtitle: "Proposal Presentation"
+author: "Roxana Rodriguez"
+institute: "IBM 6400, Cal Poly Pomona"
+format: 
+  revealjs:
+    theme: serif
+    width: 1600
+    height: 900
+    footer: MSDM CEP
+    transition: slide
+    transition-speed: default
+    incremental: false
+    toc: true
+    toc-depth: 1
+    slide-number: true
+    scrollable: true
+    smaller: true
+    code-fold: true
+    code-overflow: wrap
+    number-sections: false
+    number-depth: 5
+    embed-resources: true
+    css: styles.css
+editor: visual
+execute: 
+  echo: true
+  freeze: auto
+---
+
+## Table of Contents
+
+1.  Competitor Analysis
+2.  Investigation of Currently Available Research Framework/Model
+3.  Measures
+4.  Analytics Methods to Employ
+5.  Variables to Be Used
+6.  Keyword Research Analysis
+
+## **Competitive Analysis**
+
+::: {.fragment .fade-up}
+**Competitor #1: Bold Culture** - DEI consulting for internal + external brand efforts.
+
+-   Positions as a company improving inclusive marketing & workplace culture.
+
+-   Website with services, reports, case studies.
+
+-   SEO targeting “inclusive consultancy,” “inclusive marketing.”
+
+-   Facebook, LinkedIn, Instagram.
+
+-   No paid ads, influencer marketing, or affiliate activity.
+:::
+
+::: {.fragment .fade-up}
+**Competitor #2: Touchstone Research**
+
+-   Multicultural qualitative & quantitative research.
+
+-   Targets entertainment, apparel, and food industries.
+
+-   Positions as an inclusive research partner.
+
+-   Website with dedicated service pages, industry pages, testimonials.
+
+-   SEO with targeted keywords (e.g., UX research, quant research).
+
+-   LinkedIn, YouTube (limited activity).
+
+-   No paid advertising or expanded digital tactics.
+
+-   Email marketing + LinkedIn.
+
+-   No paid ads or influencer efforts.
+:::
+
+## **Competitive Analysis**
+
+::: {.fragment .fade-up}
+**Competitor #3: C+R Research (CultureBeat)**
+
+-   Cultural insights subdivision focused on diverse audiences.
+
+-   Positions as an analytics + cultural strategy partner.
+
+-   Strong website UX (videos, CTAs, lead forms).
+
+-   Blog, guides, events, webinars.
+
+-   Email marketing + LinkedIn.
+
+-   No paid ads or influencer efforts.
+:::
+
+## **Investigation of Currently Available Research Framework/Model**
+
+**Analytics Objective #3: Conduct keyword-research analysis and explore GA4 data from the MAS website** to generate insights for SEO optimization, landing-page usability improvements, and content-engagement optimization.
+
+::: {.fragment .fade-up}
+**Existence of Well-Established Models**
+
+-   *Digital Marketing Capability Model (DMC):* Websites as data-driven lead tools.
+
+-   *Commitment-Trust Theory:* Builds credibility and long-term B2B relationships.
+
+-   *Koch and Hartmann (2022):*Navigation, trust, and design affect buyer intention.
+
+-   *Elaboration Likelihood Model (ELM):*
+
+    -   Peripheral: Visual cues for trust.
+
+    -   Central: Deep processing of case studies + findings.
+
+-   *AIDA Model:* Guides users from attention → action (downloads, inquiries).
+:::
+
+## **Investigation of Currently Available Research Framework/Model**
+
+::: {.fragment .fade-up}
+**Need for Additional Analysis**
+
+-   Conduct surveys to measure perceptions of inclusive marketing.
+
+-   Perform sentiment analysis to understand what messaging resonates with B2C brands.
+
+-   After launch, analyze GA4 metrics to refine content, SEO, and design.
+:::
+
+::: {.fragment .fade-up}
+**Adequateness of Gathered Information**
+
+-   Current research supports that UX, content quality, and social proof improve B2B engagement.
+
+-   Literature Insights align with MAS goals of educating brands on DEI gaps.
+
+-   Evidence validates the need for data-driven website and analytics tracking.
+:::
+
+::: {.fragment .fade-up}
+**Assessment & Affirmation of Analytics Objectives**
+
+-   Objective aligns with business goals by positioning MAS as a credible inclusivity benchmark.
+
+-   GA4-driven optimization improves conversions and client outreach.
+
+-   Report downloads + blog content support lead generation.
+
+-   A/B testing and heatmaps reinforce continuous UX improvement.
+:::
+
+## Measures
+
+-   **MAS survey evaluates eight dimensions of Spanish-language accessibility:**
+
+    -   Website accessibility
+
+    -   App usability
+
+    -   Phone customer service
+
+    -   Promotions & prices
+
+    -   Language clarity
+
+    -   Visual appearance
+
+    -   Conditions & warnings
+
+    -   Follow-up emails
+
+-   **Scored on a 0–100 scale (0 = poor experience; 100 = excellent experience).**
+
+## **Analytics Methods to Employ**
+
+**Analytics Objective #3: Conduct keyword-research analysis and explore GA4 data from the MAS website** to generate insights for SEO optimization, landing-page usability improvements, and content-engagement optimization.
+
+::: {.fragment .fade-up}
+**Method to Be Used**
+
+-   Pre-launch keyword research using Ubersuggest for search demand analysis.
+
+-   Post-launch GA4 tracking for:
+
+    -   Traffic sources
+
+    -   Landing-page performance
+
+    -   Engagement + scroll depth
+
+    -   User flow + drop-off points
+:::
+
+::: {.fragment .fade-up}
+**Justification for the Method**
+
+-   Keyword research ensures MAS content aligns with user search intent.
+
+-   GA4 is standard for evaluating website performance and behavioral patterns.
+
+-   Data will support decisions on content placement, messaging, and usability improvements.
+
+-   Ensures MAS website resonates with B2C decision-makers seeking to improve DEI efforts.
+:::
+
+## **Variables to Be Used**
+
+::: {.fragment .fade-up}
+**Keyword Research Variables**
+
+-   Keyword Research Variables
+
+-   Search volume
+
+-   Keyword difficulty
+
+-   Competitiveness
+:::
+
+::: {.fragment .fade-up}
+**GA4 Variables**
+
+-   Organic traffic & acquisition channels
+
+-   Search impressions
+
+-   Bounce rate & engagement rate
+
+-   Page views
+
+-   Average session duration
+:::
+
+## Keyword Research Analysis
+
+#### Load Packages and Initial Preparation
+
+```{r}
+#install.packages("gt")
+#install.packages("gtExtras")
+
+# Load libraries
+library(gt)
+library(gtExtras)
+library(dplyr)
+library(tidyr)
+library(janitor)
+library(readr)
+
+```
+
+```{r}
+keywords <- read_csv("MAS Keyword Research.csv")
+View(keywords)
+
+#clean names
+keywords <- keywords |>
+  clean_names()
+
+#remove $ and convert to numeric
+keywords <- keywords |>
+  mutate(cpc = as.numeric(gsub("\\$", "", cpc))) |>
+  select(-no)
+
+#summary
+summary_labels <- c("Average", "Max", "Median", "Min")
+
+```
+
+#### Summary Statistics
+
+```{r}
+#Summary statistics
+summary_stats <- keywords |>
+  summarise(
+    search_volume_mean   = mean(search_volume, na.rm = TRUE),
+    search_volume_max    = max(search_volume, na.rm = TRUE),
+    search_volume_median = median(search_volume, na.rm = TRUE),
+    search_volume_min    = min(search_volume, na.rm = TRUE),
+
+    cpc_mean             = mean(cpc, na.rm = TRUE),
+    cpc_max              = max(cpc, na.rm = TRUE),
+    cpc_median           = median(cpc, na.rm = TRUE),
+    cpc_min              = min(cpc, na.rm = TRUE),
+
+    paid_difficulty_mean   = mean(paid_difficulty, na.rm = TRUE),
+    paid_difficulty_max    = max(paid_difficulty, na.rm = TRUE),
+    paid_difficulty_median = median(paid_difficulty, na.rm = TRUE),
+    paid_difficulty_min    = min(paid_difficulty, na.rm = TRUE),
+
+    seo_difficulty_mean   = mean(seo_difficulty, na.rm = TRUE),
+    seo_difficulty_max    = max(seo_difficulty, na.rm = TRUE),
+    seo_difficulty_median = median(seo_difficulty, na.rm = TRUE),
+    seo_difficulty_min    = min(seo_difficulty, na.rm = TRUE)
+  )
+
+```
+
+```{r}
+#Summary rows
+summary_rows <- data.frame(
+  keyword = c("Average", "Max", "Median", "Min"),
+  search_volume = as.numeric(c(
+    summary_stats$search_volume_mean,
+    summary_stats$search_volume_max,
+    summary_stats$search_volume_median,
+    summary_stats$search_volume_min
+  )),
+  cpc = as.numeric(c(
+    summary_stats$cpc_mean,
+    summary_stats$cpc_max,
+    summary_stats$cpc_median,
+    summary_stats$cpc_min
+  )),
+  paid_difficulty = as.numeric(c(
+    summary_stats$paid_difficulty_mean,
+    summary_stats$paid_difficulty_max,
+    summary_stats$paid_difficulty_median,
+    summary_stats$paid_difficulty_min
+  )),
+  seo_difficulty = as.numeric(c(
+    summary_stats$seo_difficulty_mean,
+    summary_stats$seo_difficulty_max,
+    summary_stats$seo_difficulty_median,
+    summary_stats$seo_difficulty_min
+  ))
+)
+
+```
+
+#### Create Table
+
+```{r}
+#Combine and create a bar column (separate from numeric SEO difficulty) 
+keywords_table <- bind_rows(keywords, summary_rows) |>
+  mutate(
+    is_summary = keyword %in% summary_labels,
+
+    #This column is only for plotting bars
+    seo_bar = if_else(is_summary, NA_real_, as.numeric(seo_difficulty))
+  )
+
+```
+
+```{r}
+
+#Table
+keywords_table |>
+  gt() |>
+  tab_header(
+    title = "Keyword Metrics",
+    subtitle = "MAS Website Keyword Research"
+  ) |>
+
+  #Spanners
+  tab_spanner(
+    label = "METRICS",
+    columns = c(search_volume, cpc, paid_difficulty, seo_difficulty, seo_bar)
+  ) |>
+  tab_spanner(
+    label = "TRAFFIC",
+    columns = c(search_volume)
+  ) |>
+  tab_spanner(
+    label = "COMPETITION",
+    columns = c(cpc, paid_difficulty, seo_difficulty, seo_bar)
+  ) |>
+
+  #Formatting: currency for CPC
+  fmt_currency(
+    columns = c(cpc),
+    currency = "USD",
+    decimals = 2
+  ) |>
+
+  #Keyword rows: whole numbers for metrics
+  fmt_number(
+    columns = c(search_volume, paid_difficulty, seo_difficulty),
+    rows = !is_summary,
+    decimals = 0
+  ) |>
+
+  #Summary rows: 2 decimals 
+  fmt_number(
+    columns = c(search_volume, paid_difficulty, seo_difficulty, cpc),
+    rows = is_summary,
+    decimals = 2
+  ) |>
+
+  #Bars column: show bar and number for keyword rows only
+  gt_plt_bar(
+    column = seo_bar,
+    scaled = TRUE,
+    text_labels = TRUE
+  ) |>
+
+  #Labels (make the bar col look like part of SEO difficulty)
+  cols_label(
+    keyword = "Keyword",
+    search_volume = "Search Volume",
+    cpc = "CPC",
+    paid_difficulty = "Paid Difficulty",
+    seo_difficulty = "SEO Difficulty",
+    seo_bar = ""  
+  ) |>
+
+  # Hide helper column
+  cols_hide(columns = is_summary) |>
+
+  #Style summary rows 
+  tab_style(
+    style = list(
+      cell_text(weight = "bold"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_body(rows = is_summary)
+  ) |>
+
+  tab_source_note(
+    source_note = "Source: Keyword Research Analysis from Ubersuggest"
+  )
+```
