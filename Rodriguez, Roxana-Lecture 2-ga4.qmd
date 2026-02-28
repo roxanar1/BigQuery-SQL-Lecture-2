@@ -1,0 +1,299 @@
+---
+title: "IC/CP-W05 BigQuery SQL Lecture 2"
+author: "Roxana Rodriguez"
+date: today
+format:
+  html:
+   theme: cosmo
+   toc: true
+   toc-depth: 4
+   number-sections: true
+   code-line-numbers: true
+   code-link: true
+   code-fold: true
+   embed-resources: true
+editor: visual
+execute:
+  freeze: auto
+  warning: false
+---
+
+## 1) CTEs (WITH) to structure logic
+
+``` sql
+
+--creates named “mini tables” inside a query.--
+--Total users + new users--
+
+WITH UserInfo AS (
+SELECT
+user_pseudo_id,
+MAX(IF(event_name IN ('first_visit', 'first_open'), 1, 0)) AS is_new_user
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20201130'
+GROUP BY user_pseudo_id
+)
+SELECT
+COUNT(*) AS total_users,
+SUM(is_new_user) AS new_users
+FROM UserInfo;
+```
+
+![](images/clipboard-304605200.png)
+
+**Explanation:** The CTE creates one row per user in November 2020 and labels them as 1 if they had a first visit or first open event. Then the query counts the total users which is 79421 and the new users which is 71734.
+
+## 2) Arrays + UNNEST (the GA4 superpower)
+
+``` sql
+
+--A4 stores lots of fields inside arrays:--
+--event_params (key/value pairs)--
+--items (products in commerce events)--
+--Two common patterns:--
+
+--Pattern A — Scalar subquery extraction (simple, safe)--
+--Pull one parameter from event_params without exploding rows.--
+
+
+SELECT
+TIMESTAMP_MICROS(event_timestamp) AS event_time,
+(
+SELECT value.string_value
+FROM UNNEST(event_params)
+WHERE key = 'page_location' LIMIT 1
+) AS page_location
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE event_name = 'page_view'
+AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201202'
+LIMIT 50;
+```
+
+![](images/clipboard-4060656396.png)
+
+**Explanation:** This query converts the timestamp to a readable time and extracts the page_location from `event_params` , limiting the results to 50 for `event_time`, and `page_location` columns.
+
+``` sql
+--Pattern B — Flattening (UNNEST in FROM) for item-level analysis--
+--This multiplies rows (one event can have many items).--
+
+SELECT
+event_date,
+item.item_name,
+COUNT(*) AS item_rows
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` e,
+UNNEST(e.items) AS item
+WHERE e.event_name = 'purchase'
+AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201231'
+GROUP BY event_date, item.item_name
+ORDER BY item_rows DESC
+LIMIT 20;
+
+--Note: UNNEST changes the “grain.” After unnesting items, you’re no longer at “event-level”; you’re at “item-row per event.”--
+```
+
+![](images/clipboard-28425456.png)
+
+**Explanation:** For this query, it pulls the purchase events from December 2020 and unnests to access individual products. it also counts how many times each item was purchase per day, and limit the results to the top 20. Example. there were 28 gift cards purchase for December 10th, 2020.
+
+## 3) STRING_AGG, ARRAY_AGG (useful aggregations)
+
+``` sql
+
+--What they do: combine many values into one row per group.--
+--Example: show a few event_names seen per day--
+
+SELECT
+event_date,
+STRING_AGG(DISTINCT event_name, ', ' ORDER BY event_name) AS events_seen
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20201201' AND '20201203'
+GROUP BY event_date
+ORDER BY event_date;
+```
+
+![](images/clipboard-3328433759.png)
+
+**Explanation:** This query groups data by from Dec 1st to Dec 3rd, 2020 and it lists all distinct event names in a comma separated string per date.
+
+``` sql
+--Example: Build a “session cart summary” (top items a user added to cart)--
+--Use Case 1:--
+-- Task: Create a list of items per session
+
+SELECT
+    user_pseudo_id,
+    ARRAY_AGG(item_name) AS items_added_to_cart
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`,
+UNNEST(items) AS item
+WHERE event_name = 'add_to_cart'
+AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201231'
+GROUP BY user_pseudo_id
+ORDER BY user_pseudo_id
+LIMIT 10;
+```
+
+![](images/clipboard-982488841.png)
+
+**Explanation:** This query get the `add_to_cart` events from Dec 2020, groups by `user_pseudo_id` and collect all item names they added to the cart.
+
+``` sql
+
+--Use Case 2:--
+-- Session-level "cart summary" using ARRAY_AGG
+
+WITH add_to_cart AS (
+  SELECT
+    user_pseudo_id,
+    (
+      SELECT value.int_value 
+      FROM UNNEST(event_params) 
+      WHERE key = 'ga_session_id'
+    ) AS session_id,
+    TIMESTAMP_MICROS(event_timestamp) AS event_timestamp,
+    i.item_id,
+    i.item_name,
+    i.quantity,
+    i.price
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`,
+  UNNEST(items) AS i
+  WHERE event_name = 'add_to_cart'
+    AND _TABLE_SUFFIX BETWEEN '20210101' AND '20211231'  -- cost control
+)
+SELECT
+  user_pseudo_id,
+  session_id,
+  COUNT(*) AS total_add_to_cart_events,              -- added insight
+  ARRAY_AGG(
+    STRUCT(item_id, item_name, quantity, price, event_timestamp)
+    ORDER BY quantity DESC, event_timestamp ASC
+    LIMIT 10
+  ) AS cart_items
+FROM add_to_cart
+WHERE session_id IS NOT NULL                          --  filter nulls
+GROUP BY user_pseudo_id, session_id;
+```
+
+![](images/clipboard-3751506673.png)
+
+**Explanation:** CTE extracts all `add_to_cart` events in 2021, pulls `session_id` from `event_params`, and unnests item details. The query also groups by user and session, counts the add to cart events, and the output returns 10 cart items per session ordered by the highest quantity and most recent time.
+
+## 4) Joins (start with INNER and LEFT)
+
+``` sql
+--Combines results based on matching keys.--
+--Example: daily users joined with daily purchases (using CTEs)--
+
+WITH daily_users AS (
+  SELECT
+    event_date,
+    COUNT(DISTINCT user_pseudo_id) AS users
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  WHERE _TABLE_SUFFIX BETWEEN '20201201' AND '20201231'
+  GROUP BY event_date
+),
+daily_purchases AS (
+  SELECT
+    event_date,
+    COUNT(DISTINCT
+      (SELECT value.string_value
+       FROM UNNEST(event_params)
+       WHERE key = 'transaction_id')
+    ) AS purchases    -- distinct transactions
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  WHERE event_name = 'purchase'
+    AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201231'
+  GROUP BY event_date
+)
+SELECT
+  u.event_date,
+  u.users,
+  -- turns “no purchase row (NULL)” into 0 purchases, which is what you want for a daily time series
+  IFNULL(p.purchases, 0) AS purchases,              
+  -- Conversion rate: what % of daily users made a purchase
+  ROUND(
+    IFNULL(p.purchases, 0) / NULLIF(u.users, 0) * 100, 2
+  ) AS conversion_rate_pct        -- NULLIF prevents division by zero
+FROM daily_users u
+LEFT JOIN daily_purchases p
+  ON u.event_date = p.event_date
+ORDER BY u.event_date;
+```
+
+![](images/clipboard-688815108.png)
+
+**Explanation:** This query creates daily total for unique users and distinct purchases for Dec 2020. Then the left join is used to join by date, and fill missing purchases with 0. Also, daily conversion rates is computed. The output shows that on Dec 1st, there were 4,308 users, 96 purchases and a conversion rate of 2.23%.
+
+## 5) Window functions + QUALIFY
+
+``` sql
+Calculate “across rows” without collapsing to 
+one row per group.--
+--Top 3 event types per day (RANK) + QUALIFY--
+
+WITH daily_event_counts AS (
+SELECT
+event_date,
+event_name,
+COUNT(*) AS events
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20201201' AND '20201207'
+GROUP BY event_date, event_name
+)
+SELECT
+event_date,
+event_name,
+events,
+RANK() OVER (PARTITION BY event_date ORDER BY events DESC) AS rnk
+FROM daily_event_counts
+QUALIFY rnk <= 3 
+ORDER BY event_date, rnk;
+
+--Rolling 7-day average of daily purchases--
+
+WITH daily_purchases AS (
+SELECT
+PARSE_DATE('%Y%m%d', event_date) AS dt,
+COUNT(*) AS purchases
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE event_name = 'purchase'
+AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201231' GROUP BY dt
+)
+SELECT
+dt,
+purchases,
+AVG(purchases) OVER (
+ORDER BY dt
+ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+) AS purchases_7d_avg
+FROM daily_purchases
+ORDER BY dt;
+```
+
+![](images/clipboard-1930749466.png)
+
+![](images/clipboard-2954933968.png)
+
+**Explanation:** The first code chunk counts event per `event_date` and `event_name` then uses RANK() to rank event types by volume and keeps 3.
+
+The second code chunk counts daily purchases, and then computes the average across the current day and the previous 6 days and it sorts chronologically by date.
+
+## 6) Approximate functions (performance-minded)
+
+``` sql
+--Return “close enough” answers faster on huge datasets.--
+--Approx distinct users per event type--
+
+SELECT
+event_name,
+APPROX_COUNT_DISTINCT(user_pseudo_id) AS approx_users
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20201201' AND '20201231'
+GROUP BY event_name
+ORDER BY approx_users DESC
+LIMIT 15;
+```
+
+![](images/clipboard-875780649.png)
+
+**Explanation:** This query counts the number of distinct users per `event_name` and it sorts by the highest user count, limiting the results to 15 events.
